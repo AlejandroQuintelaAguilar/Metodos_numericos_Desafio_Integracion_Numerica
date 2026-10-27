@@ -1,0 +1,61 @@
+name: CI/CD - Pruebas y Despliegue en GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  # 1. Pipeline de Verificación y Testing Automatizado
+  test:
+    name: Verificación de Calidad y Pruebas Unitarias
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js (v20 LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Ejecutar Suite de Pruebas Unitarias
+        run: |
+          npm test
+
+  # 2. Pipeline de Despliegue en Producción
+  deploy:
+    name: Despliegue Automatizado a GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empaquetar artefactos web para Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Despliega el directorio raíz
+          path: '.'
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
