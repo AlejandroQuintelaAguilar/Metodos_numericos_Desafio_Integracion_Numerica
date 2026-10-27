@@ -1,0 +1,16 @@
+{
+  "name": "desafio-integracion-numerica",
+  "version": "1.0.0",
+  "description": "Sistema de integración numérica de alta precisión bajo Arquitectura Limpia para el Desafío de Métodos Numéricos (La Paz, Bolivia)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/integration.test.js"
+  },
+  "keywords": [
+    "numerical-methods",
+    "simpson-rule",
+    "trapezoid-rule",
+    "clean-architecture"
+  ],
+  "license": "MIT"
+}

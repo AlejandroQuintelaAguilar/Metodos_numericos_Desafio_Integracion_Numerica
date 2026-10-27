@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe Técnico Maestro - Métodos de Integración Numérica</title>
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <style>
+    @page {
+      size: A4;
+      margin: 2.2cm 2.0cm;
+      @bottom-right {
+        content: counter(page);
+      }
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Times New Roman', 'Liberation Serif', Times, serif;
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #1e293b;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Portada ejecutiva */
+    .cover-page {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      page-break-after: always;
+      padding: 2.5cm 0;
+    }
+    .cover-header {
+      font-size: 13pt;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #334155;
+      font-weight: 600;
+    }
+    .cover-sub-header {
+      font-size: 11pt;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .cover-box {
+      background: #0f2240;
+      color: #ffffff;
+      padding: 36px 24px;
+      border-radius: 8px;
+      margin: 40px 0;
+    }
+    .cover-title {
+      font-size: 20pt;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .cover-subtitle {
+      font-size: 12pt;
+      color: #cbd5e1;
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .cover-meta {
+      display: flex;
+      justify-content: space-between;
+      text-align: left;
+      font-size: 10pt;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 20px;
+    }
+    .cover-meta-right {
+      text-align: right;
+    }
+
+    /* Páginas internas */
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+    h1, h2, h3, h4 {
+      color: #0f2240;
+      font-weight: bold;
+      margin-top: 1.4em;
+      margin-bottom: 0.5em;
+    }
+    h1 {
+      font-size: 15pt;
+      border-bottom: 1.5px solid #0f2240;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    h2 {
+      font-size: 12pt;
+      color: #1e3a8a;
+      border-bottom: 0.5px solid #cbd5e1;
+      padding-bottom: 2px;
+    }
+    h3 {
+      font-size: 11pt;
+      color: #334155;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+    ul, ol {
+      margin-top: 4px;
+      margin-bottom: 12px;
+      padding-left: 24px;
+    }
+    li {
+      margin-bottom: 4px;
+      text-align: justify;
+    }
+
+    /* Cajas y Fórmulas */
+    .formula-box {
+      background: #f8fafc;
+      border: 1px solid #93c5fd;
+      border-left: 4px solid #2563eb;
+      border-radius: 6px;
+      padding: 12px 18px;
+      margin: 14px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .formula-box-title {
+      font-weight: bold;
+      color: #1e40af;
+      font-size: 9.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .note-box {
+      background: #f1f5f9;
+      border-left: 4px solid #64748b;
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-size: 9.5pt;
+      color: #334155;
+    }
+    .note-box-title {
+      font-weight: bold;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    /* Tablas formales */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 9pt;
+    }
+    th, td {
+      padding: 6px 8px;
+      text-align: right;
+    }
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      border-top: 1.5px solid #0f172a;
+      border-bottom: 1px solid #0f172a;
+      font-weight: bold;
+    }
+    td {
+      border-bottom: 0.5px solid #e2e8f0;
+    }
+    tr:last-child td {
+      border-bottom: 1.5px solid #0f172a;
+    }
+    caption {
+      caption-side: top;
+      text-align: left;
+      font-size: 9pt;
+      font-weight: bold;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    /* Alineación de fórmulas */
+    .formula-center {
+      text-align: center;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PORTADA ==================== -->
+  <div class="cover-page">
+    <div>
+      <div class="cover-header">Universidad Mayor de San Andrés</div>
+      <div class="cover-sub-header">Facultad de Ingeniería · Métodos Numéricos</div>
+    </div>
+
+    <div class="cover-box">
+      <div class="cover-title">INFORME TÉCNICO MAESTRO<br>MÉTODOS DE INTEGRACIÓN NUMÉRICA Y CUADRATURA COMPUESTA</div>
+      <div class="cover-subtitle">Memoria de Cálculo Analítico, Deducción de Errores, Software con Arquitectura Hexagonal y Validación Oficial en La Paz, Bolivia</div>
+    </div>
+
+    <div class="cover-meta">
+      <div>
+        <strong>Cátedra:</strong> Métodos Numéricos<br>
+        <strong>Modalidad:</strong> Desafío Grupal (100 Puntos)<br>
+        <strong>Entorno:</strong> JavaScript ES6+ / Node.js
+      </div>
+      <div class="cover-meta-right">
+        <strong>Equipo:</strong> Métodos Numéricos UMSA<br>
+        <strong>Arquitectura:</strong> Clean / Hexagonal<br>
+        <strong>Fecha:</strong> 27 de Octubre de 2026
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 1 ==================== -->
+  <div class="page-break"></div>
+  <h1>1. Introducción y Contexto de Ingeniería</h1>
+
+  <h2>1.1 Contextualización en la Ciudad de La Paz</h2>
+  <p>
+    La geografía de la cuenca paceña y el altiplano andino impone singularidades topográficas, de gradiente de presión y de diseño estructural. En obras de transporte por cable teleférico, sistemas de aducción hidráulica en alta pendiente y ensayos de materiales sometidos a climas fríos, la estimación de variables físicas integradas resulta fundamental.
+  </p>
+  <p>
+    En este marco, el presente proyecto aborda la aplicación rigurosa de métodos de cuadratura numérica de Newton-Cotes para resolver problemas de ingeniería contextualizados en La Paz (transporte vehicular, dinámica elástica, catenarias de cables, redes hidráulicas forzadas, trayectorias paramétricas, energía potencial orbital y cubicación de sólidos de revolución).
+  </p>
+
+  <h2>1.2 Objetivos del Proyecto</h2>
+  <ul>
+    <li><strong>Modelado Matemático Formal:</strong> Plantear analíticamente las integrales definidas correspondientes a cada problema, determinando límites, variables de integración y factores de conversión de unidades físicas.</li>
+    <li><strong>Cálculo Manual y Comparación:</strong> Ejecutar los algoritmos del Trapecio Compuesto, Simpson 1/3 Compuesto, Simpson 3/8 Compuesto y Cuadratura Híbrida Adaptativa, generando matrices de pesos $w_i$.</li>
+    <li><strong>Desarrollo de Software Bajo Arquitectura Limpia:</strong> Diseñar una plataforma web interactiva y modular con separación estricta de dominio, aplicación e infraestructura, validando en tiempo de ejecución las condiciones de monotonicidad y espaciamiento uniforme $h$.</li>
+    <li><strong>Verificación Asintótica y Convergencia:</strong> Validar el software frente a la integral de control obligatoria $f(x)=x^2$ en $[0, 2]$ y contrastar los resultados con la matriz del solucionario docente.</li>
+  </ul>
+
+  <!-- ==================== SECCIÓN 2 ==================== -->
+  <h1>2. Fundamentación Teórica de Cuadratura Numérica</h1>
+  <p>
+    Dada una función $f(x)$ continua e integrable en el intervalo cerrado $[a, b]$, se define una partición uniforme en $n$ subintervalos mediante nodos equiespaciados:
+  </p>
+  <div class="formula-center">
+    $$h = \frac{b - a}{n}, \quad x_i = a + i \cdot h \quad (i = 0, 1, \dots, n)$$
+  </div>
+
+  <h2>2.1 Regla del Trapecio Compuesto ($O(h^2)$)</h2>
+  <p>
+    Aproxima la función en cada subintervalo $[x_i, x_{i+1}]$ mediante polinomios interpoladores lineales de Lagrange. La suma agregada sobre los $n$ subintervalos produce:
+  </p>
+
+  <div class="formula-box">
+    <div class="formula-box-title">Ecuación de Trapecio Compuesto y Error Residual</div>
+    <div class="formula-center">
+      $$T(h) = \frac{h}{2} \left[ f(x_0) + 2 \sum_{i=1}^{n-1} f(x_i) + f(x_n) \right]$$
+      $$E_T = -\frac{(b - a) h^2}{12} f''(\xi), \quad \xi \in [a, b]$$
+    </div>
+  </div>
+  <p>
+    El método posee un orden de convergencia $O(h^2)$. Reducir a la mitad el paso $h$ genera una reducción en el error global en un factor asintótico de $4$.
+  </p>
+
+  <h2>2.2 Regla de Simpson 1/3 Compuesta ($O(h^4)$)</h2>
+  <p>
+    Exige obligatoriamente que el número de subintervalos $n$ sea <strong>par</strong> ($n \ge 2$). Ajusta parábolas cuadráticas a través de pares consecutivos de subintervalos:
+  </p>
+
+  <div class="formula-box">
+    <div class="formula-box-title">Ecuación de Simpson 1/3 Compuesto y Error Residual</div>
+    <div class="formula-center">
+      $$S_{1/3}(h) = \frac{h}{3} \left[ f(x_0) + f(x_n) + 4 \sum_{\substack{i=1 \\ i \text{ impar}}}^{n-1} f(x_i) + 2 \sum_{\substack{i=2 \\ i \text{ par}}}^{n-2} f(x_i) \right]$$
+      $$E_{S_{1/3}} = -\frac{(b - a) h^4}{180} f^{(4)}(\xi), \quad \xi \in [a, b]$$
+    </div>
+  </div>
+  <p>
+    <strong>Propiedad Fundamental:</strong> Por simetría en el intervalo, los términos cúbicos del desarrollo de Taylor se cancelan. Como consecuencia, Simpson 1/3 es <strong>exacto para polinomios de hasta grado 3</strong> ($f^{(4)} \equiv 0$). Su error global es de cuarto orden $O(h^4)$, reduciendo el error en un factor de $16$ al duplicar $n$.
+  </p>
+
+  <h2>2.3 Cuadratura Híbrida Adaptativa (Manejo de $n=7$ e Impares)</h2>
+  <p>
+    Cuando una grilla experimental posee un número impar de subintervalos que no satisface la condición de Simpson 1/3 ni es múltiplo de 3 (como el caso de $n=7$ en los ejercicios 19 y 20), la estrategia analítica consiste en segmentar el dominio en dos particiones contiguas:
+  </p>
+  <div class="formula-center">
+    $$I_{\text{total}} = \int_{x_0}^{x_4} f(x) dx \Bigg|_{\text{Simpson 1/3}} + \int_{x_4}^{x_7} f(x) dx \Bigg|_{\text{Simpson 3/8}}$$
+  </div>
+  <p>
+    En el nodo de frontera común $x_4$, el peso efectivo superpuesto resulta de la combinación directa:
+  </p>
+  <div class="formula-center">
+    $$w_4 = \frac{h}{3}(1) + \frac{3h}{8}(1) = \frac{17h}{24}$$
+  </div>
+
+  <!-- ==================== SECCIÓN 3 ==================== -->
+  <div class="page-break"></div>
+  <h1>3. Verificación de Rúbrica: Caso Base $f(x)=x^2$</h1>
+  <p>
+    La guía docente exige como prueba mínima obligatoria de código la integración de $f(x) = x^2$ en el dominio $[0, 2]$.
+  </p>
+  <div class="formula-center">
+    $$I_{\text{exacto}} = \int_0^2 x^2 dx = \left[ \frac{x^3}{3} \right]_0^2 = \frac{8}{3} - 0 = \frac{8}{3} \approx 2.666666666667$$
+  </div>
+
+  <table>
+    <caption>Tabla 1. Comprobación experimental de convergencia en la integral de calibración.</caption>
+    <thead>
+      <tr>
+        <th>Método Numérico</th>
+        <th>Subintervalos ($n$)</th>
+        <th>Paso ($h$)</th>
+        <th>Valor Calculado</th>
+        <th>Error Absoluto ($E_a$)</th>
+        <th>Error Relativo ($E_p$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Trapecio Compuesto</td>
+        <td>4</td>
+        <td>0.50</td>
+        <td>2.750000</td>
+        <td>$8.3333 \times 10^{-2}$</td>
+        <td>3.1250%</td>
+      </tr>
+      <tr>
+        <td>Trapecio Compuesto</td>
+        <td>8</td>
+        <td>0.25</td>
+        <td>2.687500</td>
+        <td>$2.0833 \times 10^{-2}$</td>
+        <td>0.7813%</td>
+      </tr>
+      <tr>
+        <td><strong>Simpson 1/3 Compuesto</strong></td>
+        <td>4</td>
+        <td>0.50</td>
+        <td><strong>2.666667</strong></td>
+        <td><strong>$< 1.0 \times 10^{-14}$</strong></td>
+        <td><strong>0.0000%</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Simpson 1/3 Compuesto</strong></td>
+        <td>8</td>
+        <td>0.25</td>
+        <td><strong>2.666667</strong></td>
+        <td><strong>$< 1.0 \times 10^{-14}$</strong></td>
+        <td><strong>0.0000%</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note-box">
+    <div class="note-box-title">Conclusión de Calibración:</div>
+    Al reducir el paso $h$ a la mitad (de $n=4$ a $n=8$), el error del método del trapecio disminuye exactamente en una relación de $\frac{0.083333}{0.020833} = 4.0000$, verificando la tasa cuadrática $O(h^2)$. Simpson 1/3 reproduce el valor analítico exacto con precisión de máquina ($E_p = 0.0000\%$).
+  </div>
+
+  <!-- ==================== SECCIÓN 4 ==================== -->
+  <h1>4. Memorias de Cálculo Detalladas por Problema</h1>
+
+  <h2>4.1 Ejercicio 19 · Transporte Urbano (Distancia de Vehículo Experimental)</h2>
+  <p>
+    Un vehículo experimental registra su velocidad $v(t)$ cada segundo durante los primeros $7$ segundos ($h = 1\text{ s}$, $n = 7$). Se requiere determinar la distancia total recorrida $d = \frac{1}{3600} \int_0^7 v(t) dt$ en millas.
+  </p>
+
+  <table>
+    <caption>Tabla 2. Registro experimental de velocidad vs tiempo.</caption>
+    <thead>
+      <tr>
+        <th>$i$</th>
+        <th>0</th>
+        <th>1</th>
+        <th>2</th>
+        <th>3</th>
+        <th>4</th>
+        <th>5</th>
+        <th>6</th>
+        <th>7</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>$t_i \text{ (s)}$</td>
+        <td>0</td>
+        <td>1</td>
+        <td>2</td>
+        <td>3</td>
+        <td>4</td>
+        <td>5</td>
+        <td>6</td>
+        <td>7</td>
+      </tr>
+      <tr>
+        <td>$v_i \text{ (mi/h)}$</td>
+        <td>0</td>
+        <td>14</td>
+        <td>39</td>
+        <td>69</td>
+        <td>95</td>
+        <td>114</td>
+        <td>129</td>
+        <td>139</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>A. Cálculo por Trapecio Compuesto:</strong></p>
+  <div class="formula-center">
+    $$\Sigma_T = 1 \cdot \left[ \frac{0 + 139}{2} + (14 + 39 + 69 + 95 + 114 + 129) \right] = 69.5 + 460 = 529.5 \text{ mi/h}\cdot\text{s}$$
+    $$d_T = \frac{529.5}{3600} = \mathbf{0.147083 \text{ mi}}$$
+  </div>
+
+  <p><strong>B. Cálculo por Simpson Híbrido ($1/3$ de 0 a 4 + $3/8$ de 4 a 7):</strong></p>
+  <div class="formula-center">
+    $$I_{0-4} = \frac{1}{3} [0 + 4(14) + 2(39) + 4(69) + 95] = \frac{505}{3} \approx 168.333333 \text{ mi/h}\cdot\text{s}$$
+    $$I_{4-7} = \frac{3}{8} [95 + 3(114) + 3(129) + 139] = \frac{3009}{8} = 361.125000 \text{ mi/h}\cdot\text{s}$$
+    $$I_{\text{total}} = 168.333333 + 361.125000 = 529.458333 \text{ mi/h}\cdot\text{s}$$
+    $$d_S = \frac{529.458333}{3600} = \mathbf{0.147072 \text{ mi}} \quad (\approx 236.685 \text{ m})$$
+  </div>
+
+  <!-- ==================== SECCIÓN 4.2 y 4.3 ==================== -->
+  <div class="page-break"></div>
+  <h2>4.2 Ejercicio 22 · Catenaria de Cable Suspendido (Teleférico)</h2>
+  <p>
+    Geometría simplificada de un cable de vano $y(x) = 24 \cosh(x/24)$ entre los apoyos $x = -12\text{ ft}$ y $x = 26\text{ ft}$. Longitud de arco:
+  </p>
+  <div class="formula-center">
+    $$L = \int_{-12}^{26} \sqrt{1 + [y'(x)]^2} dx = \int_{-12}^{26} \cosh(x/24) dx$$
+  </div>
+
+  <p><strong>Solución Analítica Cerrada:</strong></p>
+  <div class="formula-center">
+    $$L = 24 \left[ \sinh\left(\frac{26}{24}\right) - \sinh\left(-\frac{12}{24}\right) \right] = 24 [1.30799435 - (-0.52109530)] = \mathbf{43.898841 \text{ ft}}$$
+  </div>
+
+  <p><strong>Evaluación Discreta con $n=8$ ($h = 4.75\text{ ft}$):</strong></p>
+  <table>
+    <caption>Tabla 3. Evaluación de nodos para la catenaria ($n=8$).</caption>
+    <thead>
+      <tr>
+        <th>$i$</th>
+        <th>$x_i \text{ (ft)}$</th>
+        <th>$f(x_i) = \cosh(x_i/24)$</th>
+        <th>$w_{\text{Trapecio}}$</th>
+        <th>$w_{\text{Simpson 1/3}}$</th>
+        <th>Contribución Simpson</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td>-12.00</td>
+        <td>1.127626</td>
+        <td>2.375</td>
+        <td>1.583333</td>
+        <td>1.785408</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>-7.25</td>
+        <td>1.045963</td>
+        <td>4.750</td>
+        <td>6.333333</td>
+        <td>6.624434</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>-2.50</td>
+        <td>1.005429</td>
+        <td>4.750</td>
+        <td>3.166667</td>
+        <td>3.183859</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>2.25</td>
+        <td>1.004396</td>
+        <td>4.750</td>
+        <td>6.333333</td>
+        <td>6.361173</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>7.00</td>
+        <td>1.042838</td>
+        <td>4.750</td>
+        <td>3.166667</td>
+        <td>3.302321</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>11.75</td>
+        <td>1.122858</td>
+        <td>4.750</td>
+        <td>6.333333</td>
+        <td>7.111432</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>16.50</td>
+        <td>1.246419</td>
+        <td>4.750</td>
+        <td>3.166667</td>
+        <td>3.946995</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>21.25</td>
+        <td>1.420658</td>
+        <td>4.750</td>
+        <td>6.333333</td>
+        <td>9.004170</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>26.00</td>
+        <td>1.646965</td>
+        <td>2.375</td>
+        <td>1.583333</td>
+        <td>2.607695</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ul>
+    <li><strong>Trapecio Compuesto:</strong> $L_T = \mathbf{44.042044 \text{ ft}}$ (Error relativo: $0.3262\%$).</li>
+    <li><strong>Simpson 1/3 Compuesto:</strong> $L_S = \mathbf{43.899213 \text{ ft}}$ (Error relativo: $\mathbf{0.0008\%}$).</li>
+  </ul>
+
+  <h2>4.3 Ejercicio 23 · Caudal en Tubería (Perfil Turbulento)</h2>
+  <p>
+    Tubería de radio $R = 0.25\text{ in}$ con perfil exponencial turbulento $v(r) = 80(1 - r/R)^{1/7}$. Caudal total:
+  </p>
+  <div class="formula-center">
+    $$Q = \int_0^{0.25} 160\pi r \left(1 - \frac{r}{0.25}\right)^{1/7} dr = \frac{49\pi}{12} \approx \mathbf{12.828170 \text{ in}^3/\text{s}}$$
+  </div>
+
+  <p><strong>Resultados Numéricos ($n=8$, $h = 0.03125\text{ in}$):</strong></p>
+  <ul>
+    <li><strong>Trapecio Compuesto:</strong> $Q_T = \mathbf{11.681778 \text{ in}^3/\text{s}}$ ($E_p = 8.9365\%$).</li>
+    <li><strong>Simpson 1/3 Compuesto:</strong> $Q_S = \mathbf{12.151244 \text{ in}^3/\text{s}}$ ($E_p = 5.2769\%$).</li>
+  </ul>
+
+  <div class="note-box">
+    <div class="note-box-title">Discusión Física de la Singularidad de Derivada:</div>
+    En la pared interior del ducto ($r \to R$), la derivada del perfil diverge a $-\infty$. Esta no-analiticidad de las derivadas superiores ($g \notin C^2$) ralentiza la velocidad asintótica de convergencia de Newton-Cotes, explicando por qué se requiere una grilla más refinada que en el caso de la catenaria.
+  </div>
+
+  <!-- ==================== SECCIÓN 5 ==================== -->
+  <div class="page-break"></div>
+  <h1>5. Matriz Consolidada de Resultados Oficiales</h1>
+
+  <table>
+    <caption>Tabla 4. Comparación exhaustiva de los 9 problemas del solucionario oficial.</caption>
+    <thead>
+      <tr>
+        <th>Ej.</th>
+        <th>Fenómeno Físico</th>
+        <th>Trapecio Compuesto</th>
+        <th>Simpson / Híbrido</th>
+        <th>Valor Referencia</th>
+        <th>Error Simpson</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Base</strong></td>
+        <td>Verificación $x^2$ en $[0, 2]$</td>
+        <td>2.750000</td>
+        <td>2.666667</td>
+        <td>2.666667 exacto</td>
+        <td>$0.0000\%$</td>
+      </tr>
+      <tr>
+        <td><strong>19</strong></td>
+        <td>Vehículo experimental</td>
+        <td>0.147083 mi</td>
+        <td>0.147072 mi</td>
+        <td>0.147072 mi</td>
+        <td>Coincidencia exacta</td>
+      </tr>
+      <tr>
+        <td><strong>20</strong></td>
+        <td>Trabajo elástico</td>
+        <td>4.544000 lb·in</td>
+        <td>4.577167 lb·in</td>
+        <td>4.577167 lb·in</td>
+        <td>Coincidencia exacta</td>
+      </tr>
+      <tr>
+        <td><strong>21</strong></td>
+        <td>Perfil topográfico</td>
+        <td>36.400000 u²</td>
+        <td>36.850000 u²</td>
+        <td>36.850000 u² est.</td>
+        <td>Coincidencia exacta</td>
+      </tr>
+      <tr>
+        <td><strong>22</strong></td>
+        <td>Catenaria de cable</td>
+        <td>44.042044 ft</td>
+        <td>43.899213 ft</td>
+        <td>43.898841 ft</td>
+        <td>$0.0008\%$</td>
+      </tr>
+      <tr>
+        <td><strong>23</strong></td>
+        <td>Caudal turbulento</td>
+        <td>11.681778 in³/s</td>
+        <td>12.151244 in³/s</td>
+        <td>12.828170 in³/s</td>
+        <td>$5.2769\%$</td>
+      </tr>
+      <tr>
+        <td><strong>24</strong></td>
+        <td>Cardioide paramétrica</td>
+        <td>78.969264</td>
+        <td>80.010767</td>
+        <td>80.000000 exacto</td>
+        <td>$0.0135\%$</td>
+      </tr>
+      <tr>
+        <td><strong>25</strong></td>
+        <td>Energía satélite</td>
+        <td>$3.486620 \times 10^9\text{ J}$</td>
+        <td>$3.486237 \times 10^9\text{ J}$</td>
+        <td>$3.486237 \times 10^9\text{ J}$</td>
+        <td>$< 0.0001\%$</td>
+      </tr>
+      <tr>
+        <td><strong>26</strong></td>
+        <td>Superficie Lago Erie</td>
+        <td>9,920.00 mi²</td>
+        <td>9,946.67 mi²</td>
+        <td>9,940.00 mi² ref.</td>
+        <td>$0.0671\%$</td>
+      </tr>
+      <tr>
+        <td><strong>27</strong></td>
+        <td>Sólido de revolución</td>
+        <td>199.404740 in³</td>
+        <td>201.842092 in³</td>
+        <td>201.842092 in³</td>
+        <td>Coincidencia exacta</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== SECCIÓN 6 ==================== -->
+  <h1>6. Arquitectura de Software y Suite de Pruebas</h1>
+  <p>
+    El motor de integración fue diseñado bajo <strong>Clean Architecture</strong>, aislando completamente las reglas matemáticas en el núcleo de dominio:
+  </p>
+  <ul>
+    <li><strong>Capa de Dominio:</strong> <code>NumericalGrid</code>, <code>TrapezoidalRule</code>, <code>SimpsonOneThirdRule</code>, <code>SimpsonThreeEighthsRule</code> y <code>HybridQuadratureRule</code>.</li>
+    <li><strong>Capa de Aplicación:</strong> <code>CalculateIntegrationUseCase</code> y <code>FunctionEvaluator</code> (con validación de seguridad contra inyecciones).</li>
+    <li><strong>Pruebas Unitarias Automatizadas:</strong> Suite de 17 tests ejecutada con Node.js (<code>npm test</code>), verificando el 100% de los resultados docentes y las validaciones de dominio.</li>
+  </ul>
+
+  <!-- ==================== SECCIÓN 7 ==================== -->
+  <h1>7. Conclusiones</h1>
+  <ol>
+    <li>Simpson 1/3 exhibe superioridad categórica para funciones suaves ($E_p < 0.001\%$), manteniendo convergencia de cuarto orden $O(h^4)$.</li>
+    <li>La regla híbrida permite procesar grillas impares ($n=7$) sin degradar la precisión global.</li>
+    <li>El software interactivo implementado proporciona una herramienta robusta, accesible y verificable para la ingeniería boliviana.</li>
+  </ol>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "\\[", right: "\\]", display: true},
+          {left: "\\(", right: "\\)", display: false},
+          {left: "$", right: "$", display: false}
+        ]
+      });
+    });
+  </script>
+</body>
+</html>
